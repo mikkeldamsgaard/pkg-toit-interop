@@ -8,15 +8,24 @@ namespace toit {
 
 class InteropChannel;
 
-class Interop : public ExternalSystemMessageHandler {
+// The purpose of this class is to initialize global variables before the fields of
+// Interop is initialized.
+class InteropInitializer {
+ protected:
+  InteropInitializer();
+
+ private:
+  static bool initialized_;
+  static void set_up();
+};
+
+class Interop : private InteropInitializer, public ExternalSystemMessageHandler {
  public:
-  Interop(uint8 num_channels);
+  explicit Interop(uint8 num_channels);
   ~Interop();
 
   // This call blocks until the toit program exists.
   Scheduler::ExitState run_vm(uint8 priority = Process::PRIORITY_NORMAL);
-
-  static void set_up();
 
  private:
   void on_message(int sender, int type, void* data, int length) override;
@@ -27,7 +36,6 @@ class Interop : public ExternalSystemMessageHandler {
   InteropChannel** channels_;
   int num_channels_;
 
-  static bool initialized_;
 
   friend class InteropChannel;
 };

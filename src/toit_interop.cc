@@ -1,3 +1,4 @@
+#include <nvs_flash.h>
 #include "toit_interop.h"
 #include "os.h"
 #include "flash_registry.h"
@@ -17,17 +18,6 @@ Interop::Interop(uint8 num_channels): ExternalSystemMessageHandler(&vm_), num_ch
 
 Interop::~Interop() {
   delete channels_;
-}
-
-bool Interop::initialized_ = false;
-
-void Interop::set_up() {
-  if (initialized_) return;
-  initialized_ = true;
-  RtcMemory::set_up();
-  FlashRegistry::set_up();
-  OS::set_up();
-  ObjectMemory::set_up();
 }
 
 Scheduler::ExitState Interop::run_vm(uint8 priority) {
@@ -81,4 +71,24 @@ bool Interop::send(InteropChannel* channel, int type, void* buf, int length) {
 }
 
 
+bool InteropInitializer::initialized_ = false;
+
+void InteropInitializer::set_up() {
+  if (initialized_) return;
+  initialized_ = true;
+
+#ifdef TOIT_FREERTOS
+  nvs_flash_init();
+  RtcMemory::set_up();
+  FlashRegistry::set_up();
+#endif
+
+  OS::set_up();
+  ObjectMemory::set_up();
+}
+
+
+InteropInitializer::InteropInitializer() {
+  set_up();
+}
 }
