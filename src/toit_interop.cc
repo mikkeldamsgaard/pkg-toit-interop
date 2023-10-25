@@ -36,8 +36,9 @@ void Interop::on_message(int sender, int system_message_type, void* data, int le
     fail("Invalid message received in interop, system message type was %d, decoded to channel %d and type %d",
          system_message_type, channel, type);
   }
+
   InteropChannel* interop_channel = channels_[channel];
-  if (type == 0) {
+  if (type == -1) {
     interop_channel->set_current_process_id(sender);
     auto dummy = static_cast<uint8*>(malloc(1));
     ExternalSystemMessageHandler::send(sender, system_message_type, dummy, 1);
@@ -62,8 +63,8 @@ bool Interop::send(InteropChannel* channel, int type, void* buf, int length) {
     toit::fail("Sending message before receiver is registered");
   }
 
-  if (type < 1 || type >= INTEROP_MESSAGES_PER_CHANNEL_) {
-    toit::fail("type is out of range 1-%d",INTEROP_MESSAGES_PER_CHANNEL_-1);
+  if (type < 0 || type >= INTEROP_MESSAGES_PER_CHANNEL_ - 1) {
+    toit::fail("type is out of range 0-%d", INTEROP_MESSAGES_PER_CHANNEL_ - 2);
   }
 
   int message_system_type = INTEROP_MESSAGE_BASE_ + INTEROP_MESSAGES_PER_CHANNEL_ * channel->channel_id() + 1 + type;

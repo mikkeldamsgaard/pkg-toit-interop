@@ -6,7 +6,7 @@ class InteropChannel implements SystemMessageHandler_:
   api/InteropApi
   channel_id/int
   channel_base_/int
-  init_latch_/monitor.Latch
+  init_latch_/monitor.Latch? := monitor.Latch
   handlers_/Map := {:}
 
   constructor .channel_id .api:
@@ -16,6 +16,7 @@ class InteropChannel implements SystemMessageHandler_:
     e := catch --unwind=(: it != DEADLINE_EXCEEDED_ERROR):
       with_timeout --ms=500:
         init_latch_.get
+        init_latch_ = null
     if e: throw "Native counterpart to channel $channel_id was not detected"
 
   add_handler message_type/int lambda/Lambda:
@@ -34,6 +35,8 @@ class InteropChannel implements SystemMessageHandler_:
     else:
       message_type := channel_message_type_from_type_ type
       handler_ := handlers_.get message_type
+      if handler_:
+        handler_.call message
 
   channel_message_type_from_type_ type/int -> int:
     return type - channel_base_ - 1
