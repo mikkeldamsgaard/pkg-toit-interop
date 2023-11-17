@@ -58,7 +58,7 @@ class InteropChannel {
 
   int channel_id() const { return channel_id_; }
 
-  virtual bool receive(int type, const void* data, int length) = 0;
+  virtual bool receive(int type, void* data, int length) = 0;
 
  private:
   void set_current_process_id(int process_id) { current_process_id_ = process_id; }

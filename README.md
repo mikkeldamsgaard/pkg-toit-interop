@@ -39,7 +39,7 @@ example see this code
 class TestChannel: public toit::InteropChannel {
 public:
   TestChannel(toit::Interop* interop, int channel_id): InteropChannel(interop, channel_id) {}
-  bool receive(int type, const void* data, int length) override {
+  bool receive(int type, void* data, int length) override {
     send(type, const_cast<void *>(data), length);
     return false;
   }
